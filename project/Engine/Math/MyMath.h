@@ -5,6 +5,7 @@
 #include "Matrix3x3.h"
 #include "Matrix.h"
 #include "Transform.h"
+#include "Quaternion.h"
 
 static constexpr double PI = 3.14159265359;
 

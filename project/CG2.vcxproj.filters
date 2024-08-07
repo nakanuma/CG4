@@ -192,6 +192,9 @@
     <ClCompile Include="SceneFactory.cpp">
       <Filter>Scene</Filter>
     </ClCompile>
+    <ClCompile Include="Quaternion.cpp">
+      <Filter>Engine\Math</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Engine\Util\StringUtil.h">
@@ -325,6 +328,9 @@
     </ClInclude>
     <ClInclude Include="SceneFactory.h">
       <Filter>Scene</Filter>
+    </ClInclude>
+    <ClInclude Include="Quaternion.h">
+      <Filter>Engine\Math</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
