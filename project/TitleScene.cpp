@@ -41,7 +41,7 @@ void TitleScene::Initialize()
 	sprite_->SetSize({ 500.0f, 500.0f });
 
 	// モデル読み込み
-	model_ = ModelManager::LoadObjFile("resources/Models", "plane.obj", dxBase->GetDevice());
+	model_ = ModelManager::LoadModelFile("resources/Models", "plane.obj", dxBase->GetDevice());
 
 	// 3Dオブジェクトの生成とモデル指定
 	object_ = new Object3D();

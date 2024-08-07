@@ -33,9 +33,6 @@ private:
 	/// ↓ ゲームシーン用
 	///
 
-	// スプライト
-	Sprite* sprite_;
-
 	// モデルデータ
 	ModelManager::ModelData model_;
 	// 3Dオブジェクト

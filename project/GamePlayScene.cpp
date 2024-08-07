@@ -28,16 +28,11 @@ void GamePlayScene::Initialize()
 	///	
 	
 	// Texture読み込み
-	uint32_t uvCheckerGH = TextureManager::Load("resources/Images/gamePlay.png", dxBase->GetDevice());
-
-	// スプライトの生成と初期化
-	sprite_ = new Sprite();
-	sprite_->Initialize(spriteCommon, uvCheckerGH);
-	sprite_->SetSize({ 500.0f, 500.0f });
-
+	uint32_t uvCheckerGH = TextureManager::Load("resources/Images/uvChecker.png", dxBase->GetDevice());
 	
 	// モデル読み込み
-	model_ = ModelManager::LoadObjFile("resources/Models", "sphere.obj", dxBase->GetDevice());
+	model_ = ModelManager::LoadModelFile("resources/Models", "plane.gltf", dxBase->GetDevice());
+	model_.material.textureHandle = uvCheckerGH;
 
 	// 3Dオブジェクトの生成とモデル指定
 	object_ = new Object3D();
@@ -58,9 +53,6 @@ void GamePlayScene::Finalize()
 	// 3Dオブジェクト開放
 	delete object_;
 
-	// Sprite開放
-	delete sprite_;
-
 	// SpriteCommon開放
 	delete spriteCommon;
 
@@ -70,12 +62,9 @@ void GamePlayScene::Finalize()
 
 void GamePlayScene::Update()
 {
-	// スプライトの更新
-	sprite_->Update();
-
 	// 3Dオブジェクトの更新
 	object_->UpdateMatrix();
-	object_->transform_.rotate.y += 0.001f;
+	/*object_->transform_.rotate.y += 0.001f;*/
 }
 
 void GamePlayScene::Draw()
@@ -97,6 +86,14 @@ void GamePlayScene::Draw()
 	///	↓ ここから3Dオブジェクトの描画コマンド
 	/// 
 
+	// オブジェクトの行列
+	Matrix worldMatrix = object_->transform_.MakeAffineMatrix();
+	Matrix viewMatrix = Camera::GetCurrent()->MakeViewMatrix();
+	Matrix projectionMatrix = Camera::GetCurrent()->MakePerspectiveFovMatrix();
+	// RootのMatrixを適用
+	object_->wvpCB_.data_->WVP = model_.rootNode.localMatrix * worldMatrix * viewMatrix * projectionMatrix;
+	object_->wvpCB_.data_->World = model_.rootNode.localMatrix * worldMatrix;
+
 	// 3Dオブジェクト描画
 	object_->Draw();
 
@@ -111,19 +108,14 @@ void GamePlayScene::Draw()
 	/// ↓ ここからスプライトの描画コマンド
 	/// 
 
-	// スプライトの描画
-	sprite_->Draw();
-
 	///
 	/// ↑ ここまでスプライトの描画コマンド
 	/// 
 
 	ImGui::Begin("window");
-
-	if (ImGui::Button("PlaySound")) {
-		soundManager->PlayWave(soundData_);
-	}
-
+	ImGui::DragFloat3("translate", &object_->transform_.translate.x, 0.01f);
+	ImGui::DragFloat3("rotate", &object_->transform_.rotate.x, 0.01f);
+	ImGui::DragFloat3("scale", &object_->transform_.scale.x, 0.01f);
 	ImGui::End();
 
 	// ImGuiの内部コマンドを生成する
