@@ -194,7 +194,7 @@ Float3 ModelManager::CalculateValue(const std::vector<KeyframeFloat3>& keyframes
     }
     // ここまできた場合は一番後の時刻よりも後ろなので最後の値を返すことにする
     return (*keyframes.rbegin()).value;
-}
+} 
 
 Quaternion ModelManager::CalculateValue(const std::vector<KeyframeQuaternion>& keyframes, float time)
 {
