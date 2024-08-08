@@ -35,6 +35,10 @@ private:
 
 	// モデルデータ
 	ModelManager::ModelData model_;
+	// アニメーション
+	ModelManager::Animation animation_;
+	// アニメーション時間
+	float animationTime = 0.0f;
 	// 3Dオブジェクト
 	Object3D* object_;
 

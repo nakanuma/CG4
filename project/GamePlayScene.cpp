@@ -31,8 +31,11 @@ void GamePlayScene::Initialize()
 	uint32_t uvCheckerGH = TextureManager::Load("resources/Images/uvChecker.png", dxBase->GetDevice());
 	
 	// モデル読み込み
-	model_ = ModelManager::LoadModelFile("resources/Models", "plane.gltf", dxBase->GetDevice());
+	model_ = ModelManager::LoadModelFile("resources/Models", "AnimatedCube.gltf", dxBase->GetDevice());
 	model_.material.textureHandle = uvCheckerGH;
+
+	// アニメーション読み込み
+	animation_ = ModelManager::LoadAnimation("resources/Models", "AnimatedCube.gltf");
 
 	// 3Dオブジェクトの生成とモデル指定
 	object_ = new Object3D();
@@ -90,9 +93,19 @@ void GamePlayScene::Draw()
 	Matrix worldMatrix = object_->transform_.MakeAffineMatrix();
 	Matrix viewMatrix = Camera::GetCurrent()->MakeViewMatrix();
 	Matrix projectionMatrix = Camera::GetCurrent()->MakePerspectiveFovMatrix();
+
+	animationTime += 1.0f / 60.0f; // 時刻を進める。
+	animationTime = std::fmod(animationTime, animation_.duration); // 最後までいったら最初からリピート再生。
+	ModelManager::NodeAnimation& rootNodeAnimation = animation_.nodeAnimations[model_.rootNode.name]; // rootNodeのAnimationを取得
+	Float3 translate = ModelManager::CalculateValue(rootNodeAnimation.translate, animationTime); // 指定時刻の値を取得。
+	Quaternion rotate = ModelManager::CalculateValue(rootNodeAnimation.rotate, animationTime);
+	Float3 scale = ModelManager::CalculateValue(rootNodeAnimation.scale, animationTime);
+	Transform transform = { scale, Float3{rotate.x, rotate.y, rotate.z}, translate }; // 一旦Transformにする
+	Matrix localMatrix = transform.MakeAffineMatrix();
+
 	// RootのMatrixを適用
-	object_->wvpCB_.data_->WVP = model_.rootNode.localMatrix * worldMatrix * viewMatrix * projectionMatrix;
-	object_->wvpCB_.data_->World = model_.rootNode.localMatrix * worldMatrix;
+	object_->wvpCB_.data_->WVP = localMatrix * worldMatrix * viewMatrix * projectionMatrix;
+	object_->wvpCB_.data_->World = localMatrix * worldMatrix;
 
 	// 3Dオブジェクト描画
 	object_->Draw();
@@ -113,6 +126,9 @@ void GamePlayScene::Draw()
 	/// 
 
 	ImGui::Begin("window");
+
+	ImGui::Text("%s", model_.rootNode.name.c_str());
+
 	ImGui::DragFloat3("translate", &object_->transform_.translate.x, 0.01f);
 	ImGui::DragFloat3("rotate", &object_->transform_.rotate.x, 0.01f);
 	ImGui::DragFloat3("scale", &object_->transform_.scale.x, 0.01f);

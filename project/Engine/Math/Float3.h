@@ -53,4 +53,10 @@ struct Float3
         z -= other.z;
         return *this;
     }
+
+    // 線形補間
+    static Float3 Lerp(const Float3& a, const Float3& b, float t)
+    {
+        return a + t * (b - a);
+    }
 };
