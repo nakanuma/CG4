@@ -29,14 +29,16 @@ void GamePlayScene::Initialize()
 	
 	// Texture読み込み
 	uint32_t uvCheckerGH = TextureManager::Load("resources/Images/uvChecker.png", dxBase->GetDevice());
-	uint32_t animatedCubeGH = TextureManager::Load("resources/Images/AnimatedCube_BaseColor.png", dxBase->GetDevice());
+	uint32_t whiteGH = TextureManager::Load("resources/Images/white.png", dxBase->GetDevice());
 	
 	// モデル読み込み
-	model_ = ModelManager::LoadModelFile("resources/Models", "AnimatedCube.gltf", dxBase->GetDevice());
-	model_.material.textureHandle = animatedCubeGH;
+	model_ = ModelManager::LoadModelFile("resources/Models/human", "sneakWalk.gltf", dxBase->GetDevice());
+	model_.material.textureHandle = whiteGH;
 
 	// アニメーション読み込み
-	animation_ = ModelManager::LoadAnimation("resources/Models", "AnimatedCube.gltf");
+	animation_ = ModelManager::LoadAnimation("resources/Models/human", "sneakWalk.gltf");
+	// スケルトン作成
+	skeleton_ = ModelManager::CreateSkeleton(model_.rootNode);
 
 	// 3Dオブジェクトの生成とモデル指定
 	object_ = new Object3D();
@@ -97,16 +99,20 @@ void GamePlayScene::Draw()
 
 	animationTime += 1.0f / 60.0f; // 時刻を進める
 	animationTime = std::fmod(animationTime, animation_.duration); // 最後までいったら最初からリピート再生
-	ModelManager::NodeAnimation& rootNodeAnimation = animation_.nodeAnimations[model_.rootNode.name]; // rootNodeのAnimationを取得
-	Float3 translate = ModelManager::CalculateValue(rootNodeAnimation.translate, animationTime); // 指定時刻の値を取得。
-	Quaternion rotate = ModelManager::CalculateValue(rootNodeAnimation.rotate, animationTime);
-	Float3 scale = ModelManager::CalculateValue(rootNodeAnimation.scale, animationTime);
-	Transform transform = { scale, Float3{rotate.x, rotate.y, rotate.z}, translate }; // 一旦Transformにする
-	Matrix localMatrix = transform.MakeAffineMatrix();
+	ModelManager::ApplyAnimation(skeleton_, animation_, animationTime);
+	ModelManager::Update(skeleton_);
+
+	//ModelManager::NodeAnimation& rootNodeAnimation = animation_.nodeAnimations[model_.rootNode.name]; // rootNodeのAnimationを取得
+	//Float3 translate = ModelManager::CalculateValue(rootNodeAnimation.translate, animationTime); // 指定時刻の値を取得。
+	//Quaternion rotate = ModelManager::CalculateValue(rootNodeAnimation.rotate, animationTime);
+	//Float3 scale = ModelManager::CalculateValue(rootNodeAnimation.scale, animationTime);
+	//Transform transform = { scale, Float3{rotate.x, rotate.y, rotate.z}, translate }; // 一旦Transformにする
+	//Matrix localMatrix = transform.MakeAffineMatrix();
 
 	// RootのMatrixを適用
-	object_->wvpCB_.data_->WVP = localMatrix * worldMatrix * viewMatrix * projectionMatrix;
-	object_->wvpCB_.data_->World = localMatrix * worldMatrix;
+	object_->wvpCB_.data_->WVP = worldMatrix * viewMatrix * projectionMatrix;
+	/*object_->wvpCB_.data_->World = localMatrix * worldMatrix;*/
+	object_->wvpCB_.data_->World = worldMatrix;
 
 	// 3Dオブジェクト描画
 	object_->Draw();
@@ -133,6 +139,8 @@ void GamePlayScene::Draw()
 	ImGui::DragFloat3("translate", &object_->transform_.translate.x, 0.01f);
 	ImGui::DragFloat3("rotate", &object_->transform_.rotate.x, 0.01f);
 	ImGui::DragFloat3("scale", &object_->transform_.scale.x, 0.01f);
+
+
 
 	ImGui::End();
 

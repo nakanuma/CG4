@@ -2,6 +2,7 @@
 #include "Float2.h"
 #include "Float3.h"
 #include "Float4.h"
+#include "Quaternion.h"
 
 class Matrix
 {
@@ -60,5 +61,7 @@ public:
 	static Matrix Roll(float rad);
 
 	static Matrix RotationRollPitchYaw(float roll, float pitch, float yaw);
+
+	static Matrix RotationToQuaternion(Quaternion q);
 };
 

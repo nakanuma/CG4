@@ -116,13 +116,22 @@ ModelManager::MaterialData ModelManager::LoadMaterialTemplateFile(const std::str
 ModelManager::Node ModelManager::ReadNode(aiNode* node)
 {
     Node result;
-    aiMatrix4x4 aiLocalMatrix = node->mTransformation; // nodeのlocalMatrixを取得
-    aiLocalMatrix.Transpose(); // 列ベクトル形式を行ベクトル形式に転置
-    for (uint32_t i = 0; i < 4; ++i) { // 行列を結果にコピー
-        for (uint32_t j = 0; j < 4; ++j) {
-            result.localMatrix.r[i][j] = aiLocalMatrix[i][j];
-        }
-    }
+
+    aiVector3D scale, translate;
+    aiQuaternion rotate;
+    node->mTransformation.Decompose(scale, rotate, translate); // assimpの行列からSRTを抽出する関数を利用
+    result.transform.scale = { scale.x, scale.y, scale.z }; // Scaleはそのまま
+    result.transform.rotate = { rotate.x, -rotate.y, -rotate.z, rotate.w }; // x軸を反転、さらに回転方向が逆なので軸を反転させる
+    result.transform.translate = { -translate.x, translate.y, translate.z }; // x軸を反転
+    result.localMatrix = result.transform.MakeAffineMatrix();
+
+    //aiMatrix4x4 aiLocalMatrix = node->mTransformation; // nodeのlocalMatrixを取得
+    //aiLocalMatrix.Transpose(); // 列ベクトル形式を行ベクトル形式に転置
+    //for (uint32_t i = 0; i < 4; ++i) { // 行列を結果にコピー
+    //    for (uint32_t j = 0; j < 4; ++j) {
+    //        result.localMatrix.r[i][j] = aiLocalMatrix[i][j];
+    //    }
+    //}
     result.name = node->mName.C_Str(); // Node名を格納
     result.children.resize(node->mNumChildren); // 子供の数だけ確保
     for (uint32_t childIndex = 0; childIndex < node->mNumChildren; ++childIndex) {
@@ -214,4 +223,65 @@ Quaternion ModelManager::CalculateValue(const std::vector<KeyframeQuaternion>& k
     }
     // ここまできた場合は一番後の時刻よりも後ろなので最後の値を返すことにする
     return (*keyframes.rbegin()).value;
+}
+
+ModelManager::Skeleton ModelManager::CreateSkeleton(const Node& rootNode)
+{
+    Skeleton skeleton;
+    skeleton.root = CreateJoint(rootNode, {}, skeleton.joints);
+
+    // 名前とindexのマッピングを行いアクセスしやすくする
+    for (const Joint& joint : skeleton.joints) {
+        skeleton.jointMap.emplace(joint.name, joint.index);
+    }
+
+    // スケルトン作成時に更新しておく
+    ModelManager::Update(skeleton);
+
+    return skeleton;
+}
+
+int32_t ModelManager::CreateJoint(const Node& node, const std::optional<int32_t>& parent, std::vector<Joint>& joints)
+{
+    Joint joint;
+    joint.name = node.name;
+    joint.localMatrix = node.localMatrix;
+    joint.skeletonSpaceMatrix = Matrix::Identity();
+    joint.transform = node.transform;
+    joint.index = int32_t(joints.size()); // 現在登録されてる数をIndexに
+    joint.parent = parent;
+    joints.push_back(joint); // SkeletonのJoint列に追加
+    for (const Node& child : node.children) {
+        // 子Jointを作成し、そのIndexを登録
+        int32_t childIndex = CreateJoint(child, joint.index, joints);
+        joints[joint.index].children.push_back(childIndex);
+    }
+    // 自身のIndexを返す
+    return joint.index;
+}
+
+void ModelManager::Update(Skeleton& skeleton)
+{
+    // すべてのJointを更新
+    for (Joint& joint : skeleton.joints) {
+        joint.localMatrix = joint.transform.MakeAffineMatrix();
+        if (joint.parent) { // 親がいれば親の行列を掛ける
+            joint.skeletonSpaceMatrix = joint.localMatrix * skeleton.joints[*joint.parent].skeletonSpaceMatrix;
+        } else { // 親がいないのでlocalMatrixとskeletonSpaceMatrixは一致する
+            joint.skeletonSpaceMatrix = joint.localMatrix;
+        }
+    }
+}
+
+void ModelManager::ApplyAnimation(Skeleton& skeleton, const Animation& animation, float animationTime)
+{
+    for (Joint& joint : skeleton.joints) {
+        // 対象のJointのAnimationがあれば、他の適用を行う
+        if (auto it = animation.nodeAnimations.find(joint.name); it != animation.nodeAnimations.end()) {
+            const NodeAnimation& rootNodeAnimation = (*it).second;
+            joint.transform.translate = CalculateValue(rootNodeAnimation.translate, animationTime);
+            joint.transform.rotate = CalculateValue(rootNodeAnimation.rotate, animationTime);
+            joint.transform.scale = CalculateValue(rootNodeAnimation.scale, animationTime);
+        }
+    }
 }

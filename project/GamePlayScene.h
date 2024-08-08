@@ -37,6 +37,8 @@ private:
 	ModelManager::ModelData model_;
 	// アニメーション
 	ModelManager::Animation animation_;
+	// スケルトン
+	ModelManager::Skeleton skeleton_;
 	// アニメーション時間
 	float animationTime = 0.0f;
 	// 3Dオブジェクト

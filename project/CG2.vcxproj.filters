@@ -195,6 +195,9 @@
     <ClCompile Include="Quaternion.cpp">
       <Filter>Engine\Math</Filter>
     </ClCompile>
+    <ClCompile Include="QuaternionTransform.cpp">
+      <Filter>Engine\Math</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Engine\Util\StringUtil.h">
@@ -330,6 +333,9 @@
       <Filter>Scene</Filter>
     </ClInclude>
     <ClInclude Include="Quaternion.h">
+      <Filter>Engine\Math</Filter>
+    </ClInclude>
+    <ClInclude Include="QuaternionTransform.h">
       <Filter>Engine\Math</Filter>
     </ClInclude>
   </ItemGroup>

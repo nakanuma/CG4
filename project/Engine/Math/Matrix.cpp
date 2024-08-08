@@ -333,3 +333,30 @@ Matrix Matrix::RotationRollPitchYaw(float roll, float pitch, float yaw)
 	Matrix result = Matrix::Identity() * Roll(roll) * Pitch(pitch) * Yaw(yaw);
 	return result;
 }
+
+Matrix Matrix::RotationToQuaternion(Quaternion q)
+{
+	Matrix result;
+
+	result.r[0][0] = (q.w * q.w) + (q.x * q.x) - (q.y * q.y) - (q.z * q.z);
+	result.r[0][1] = 2.0f * ((q.x * q.y) + (q.w * q.z));
+	result.r[0][2] = 2.0f * ((q.x * q.z) - (q.w * q.y));
+	result.r[0][3] = 0.0f;
+
+	result.r[1][0] = 2.0f * ((q.x * q.y) - (q.w * q.z));
+	result.r[1][1] = (q.w * q.w) - (q.x * q.x) + (q.y * q.y) - (q.z * q.z);
+	result.r[1][2] = 2.0f * ((q.y * q.z) + (q.w * q.x));
+	result.r[1][3] = 0.0f;
+
+	result.r[2][0] = 2.0f * ((q.x * q.z) + (q.w * q.y));
+	result.r[2][1] = 2.0f * ((q.y * q.z) - (q.w * q.x));
+	result.r[2][2] = (q.w * q.w) - (q.x * q.x) - (q.y * q.y) + (q.z * q.z);
+	result.r[2][3] = 0.0f;
+
+	result.r[3][0] = 0.0f;
+	result.r[3][1] = 0.0f;
+	result.r[3][2] = 0.0f;
+	result.r[3][3] = 0.1f;
+
+	return result;
+}

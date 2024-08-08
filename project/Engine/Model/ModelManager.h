@@ -3,6 +3,7 @@
 #include <string>
 #include <d3d12.h>
 #include <map>
+#include <optional>
 
 #include <assimp/Importer.hpp>
 #include <assimp/scene.h>
@@ -27,6 +28,7 @@ public:
 	};
 
 	struct Node {
+		QuaternionTransform transform;
 		Matrix localMatrix;
 		std::string name;
 		std::vector<Node> children;
@@ -39,6 +41,7 @@ public:
 		D3D12_VERTEX_BUFFER_VIEW vertexBufferView;
 		Node rootNode;
 	};
+
 
 	///
 	/// Animation
@@ -65,6 +68,27 @@ public:
 		std::map<std::string, NodeAnimation> nodeAnimations;
 	};
 
+
+	///
+	///	Skeleton
+	/// 
+	
+	struct Joint {
+		QuaternionTransform transform; // Transform情報
+		Matrix localMatrix; // localMatrix
+		Matrix skeletonSpaceMatrix; // sletetonSpaceでの変換行列
+		std::string name; // 名前
+		std::vector<int32_t> children; // 子JointのIndexのリスト。いなければ空
+		int32_t index; // 自身のIndex
+		std::optional<int32_t> parent; // 親JointのIndex。いなければnull
+	};
+
+	struct Skeleton {
+		int32_t root; // RootJointのIndex
+		std::map<std::string, int32_t> jointMap; // Joint名とIndexとの辞書
+		std::vector<Joint> joints; // 所属しているジョイント
+	};
+
 	// Objファイルの読み込みを行う
 	static ModelData LoadModelFile(const std::string& directoryPath, const std::string& filename, ID3D12Device* device);
 	// mtlファイルの読み込みを行う
@@ -72,10 +96,21 @@ public:
 	// assimpのNodeから、Node構造体に変換
 	static Node ReadNode(aiNode* node);
 
+
 	// Animation読み込み
 	static Animation LoadAnimation(const std::string& directoryPath, const std::string& filename);
 	// 任意の時刻の値を取得する
 	static Float3 CalculateValue(const std::vector<KeyframeFloat3>& keyframes, float time);
 	static Quaternion CalculateValue(const std::vector<KeyframeQuaternion>& keyframes, float time);
+
+
+	// ModelDataのNodeの階層構造からSkeletonを作成
+	static Skeleton CreateSkeleton(const Node& rootNode);
+	// NodeからJointを作成
+	static int32_t CreateJoint(const Node& node, const std::optional<int32_t>& parent, std::vector<Joint>& joints);
+	// Skeletonの更新
+	static void Update(Skeleton& skeleton);
+	// Skeletonに対してAnimationの適用
+	static void ApplyAnimation(Skeleton& skeleton, const Animation& animation, float animationTime);
 };
 
