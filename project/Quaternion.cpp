@@ -34,6 +34,20 @@ Quaternion& Quaternion::operator-=(const Quaternion& other)
     return *this;
 }
 
+Quaternion Quaternion::MakeRotateAxisAngleQuaternion(const Float3& axis, float angle)
+{
+    Float3 normalizedAxis = Float3::Normalize(axis);
+    float halfAngle = angle * 0.5f;
+    float sinHalfAngle = std::sin(halfAngle);
+
+    float x = normalizedAxis.x * sinHalfAngle;
+    float y = normalizedAxis.y * sinHalfAngle;
+    float z = normalizedAxis.z * sinHalfAngle;
+    float w = std::cos(halfAngle);
+
+    return Quaternion(x, y, z, w);
+}
+
 Quaternion Quaternion::Slerp(const Quaternion& a, const Quaternion& b, float t)
 {
     // コサイン角度の計算

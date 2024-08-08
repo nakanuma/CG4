@@ -1,4 +1,6 @@
 #pragma once
+#include "Float3.h"
+
 class Quaternion
 {
 public:
@@ -31,6 +33,8 @@ public:
 	Quaternion& operator+=(const Quaternion& other);
 	Quaternion& operator-=(const Quaternion& other);
 
+	// 任意軸回転を表すQuaternionの生成
+	static Quaternion MakeRotateAxisAngleQuaternion(const Float3& axis, float angle);
 	// 球面線形補間
 	static Quaternion Slerp(const Quaternion& a, const Quaternion& b, float t);
 };

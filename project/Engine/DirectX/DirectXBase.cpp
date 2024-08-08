@@ -703,6 +703,9 @@ void DirectXBase::PostDraw()
 	// GPUにコマンドリストの実行を行わせる
 	ID3D12CommandList* commandLists[] = { commandList_.Get() };
 	commandQueue_->ExecuteCommandLists(1, commandLists);
+	
+	// FPS固定
+	UpdateFixFPS();
 }
 
 ID3D12Device* DirectXBase::GetDevice()
@@ -760,7 +763,7 @@ void DirectXBase::UpdateFixFPS()
 		std::chrono::duration_cast<std::chrono::microseconds>(now - reference_);
 
 	// 1/60秒（よりわずかに短い時間）経っていない場合
-	if (elapsed < kMinCheckTime) {
+	if (elapsed < kMinTime) {
 		// 1/60秒経過するまで微小なスリープを繰り返す
 		while (std::chrono::steady_clock::now() - reference_ < kMinTime) {
 			// 1マイクロ秒スリープ

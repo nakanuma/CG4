@@ -29,10 +29,11 @@ void GamePlayScene::Initialize()
 	
 	// Texture読み込み
 	uint32_t uvCheckerGH = TextureManager::Load("resources/Images/uvChecker.png", dxBase->GetDevice());
+	uint32_t animatedCubeGH = TextureManager::Load("resources/Images/AnimatedCube_BaseColor.png", dxBase->GetDevice());
 	
 	// モデル読み込み
 	model_ = ModelManager::LoadModelFile("resources/Models", "AnimatedCube.gltf", dxBase->GetDevice());
-	model_.material.textureHandle = uvCheckerGH;
+	model_.material.textureHandle = animatedCubeGH;
 
 	// アニメーション読み込み
 	animation_ = ModelManager::LoadAnimation("resources/Models", "AnimatedCube.gltf");
@@ -40,7 +41,7 @@ void GamePlayScene::Initialize()
 	// 3Dオブジェクトの生成とモデル指定
 	object_ = new Object3D();
 	object_->model_ = &model_;
-	object_->transform_.rotate = { 0.0f, 3.14f, 0.0f };
+	/*object_->transform_.rotate = { 0.0f, 3.14f, 0.0f };*/
 
 	// 音声読み込み
 	soundData_ = soundManager->LoadWave("resources/Sounds/yay.wav");
@@ -94,8 +95,8 @@ void GamePlayScene::Draw()
 	Matrix viewMatrix = Camera::GetCurrent()->MakeViewMatrix();
 	Matrix projectionMatrix = Camera::GetCurrent()->MakePerspectiveFovMatrix();
 
-	animationTime += 1.0f / 60.0f; // 時刻を進める。
-	animationTime = std::fmod(animationTime, animation_.duration); // 最後までいったら最初からリピート再生。
+	animationTime += 1.0f / 60.0f; // 時刻を進める
+	animationTime = std::fmod(animationTime, animation_.duration); // 最後までいったら最初からリピート再生
 	ModelManager::NodeAnimation& rootNodeAnimation = animation_.nodeAnimations[model_.rootNode.name]; // rootNodeのAnimationを取得
 	Float3 translate = ModelManager::CalculateValue(rootNodeAnimation.translate, animationTime); // 指定時刻の値を取得。
 	Quaternion rotate = ModelManager::CalculateValue(rootNodeAnimation.rotate, animationTime);
@@ -132,6 +133,7 @@ void GamePlayScene::Draw()
 	ImGui::DragFloat3("translate", &object_->transform_.translate.x, 0.01f);
 	ImGui::DragFloat3("rotate", &object_->transform_.rotate.x, 0.01f);
 	ImGui::DragFloat3("scale", &object_->transform_.scale.x, 0.01f);
+
 	ImGui::End();
 
 	// ImGuiの内部コマンドを生成する

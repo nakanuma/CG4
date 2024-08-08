@@ -1,4 +1,5 @@
 #pragma once
+#include <cmath>
 
 struct Float3
 {
@@ -54,9 +55,19 @@ struct Float3
         return *this;
     }
 
+    // 正規化
+    static Float3 Normalize(const Float3& a) {
+        float length = std::sqrt(a.x * a.x + a.y * a.y + a.z * a.z);
+        return Float3(a.x / length, a.y / length, a.z / length);
+    }
+
     // 線形補間
     static Float3 Lerp(const Float3& a, const Float3& b, float t)
     {
-        return a + t * (b - a);
+        return {
+            a.x * (1.0f - t) + b.x * t,
+            a.y * (1.0f - t) + b.y * t,
+            a.z * (1.0f - t) + b.z * t,
+        };
     }
 };
