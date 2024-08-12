@@ -62,6 +62,6 @@ public:
 
 	static Matrix RotationRollPitchYaw(float roll, float pitch, float yaw);
 
-	static Matrix RotationToQuaternion(Quaternion q);
+	static Matrix QuaternionToRotation(Quaternion q);
 };
 

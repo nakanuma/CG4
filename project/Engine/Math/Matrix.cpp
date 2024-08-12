@@ -334,7 +334,7 @@ Matrix Matrix::RotationRollPitchYaw(float roll, float pitch, float yaw)
 	return result;
 }
 
-Matrix Matrix::RotationToQuaternion(Quaternion q)
+Matrix Matrix::QuaternionToRotation(Quaternion q)
 {
 	Matrix result;
 
@@ -356,7 +356,7 @@ Matrix Matrix::RotationToQuaternion(Quaternion q)
 	result.r[3][0] = 0.0f;
 	result.r[3][1] = 0.0f;
 	result.r[3][2] = 0.0f;
-	result.r[3][3] = 0.1f;
+	result.r[3][3] = 1.0f;
 
 	return result;
 }

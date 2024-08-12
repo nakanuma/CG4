@@ -32,14 +32,14 @@ void GamePlayScene::Initialize()
 	uint32_t whiteGH = TextureManager::Load("resources/Images/white.png", dxBase->GetDevice());
 	
 	// モデル読み込み
-	model_ = ModelManager::LoadModelFile("resources/Models/human", "walk.gltf", dxBase->GetDevice());
+	model_ = ModelManager::LoadModelFile("resources/Models/human", "sneakWalk.gltf", dxBase->GetDevice());
 	model_.material.textureHandle = whiteGH;
 
 	sphereModel_ = ModelManager::LoadModelFile("resources/Models", "sphere.obj", dxBase->GetDevice());
 	sphereModel_.material.textureHandle = whiteGH;
 
 	// アニメーション読み込み
-	animation_ = ModelManager::LoadAnimation("resources/Models/human", "walk.gltf");
+	animation_ = ModelManager::LoadAnimation("resources/Models/human", "sneakWalk.gltf");
 	// スケルトン作成
 	skeleton_ = ModelManager::CreateSkeleton(model_.rootNode);
 
@@ -52,7 +52,7 @@ void GamePlayScene::Initialize()
 	for (size_t i = 0; i < skeleton_.joints.size(); ++i) {
 		Object3D* sphere = new Object3D();
 		sphere->model_ = &sphereModel_;
-		sphere->transform_.scale = { 0.01f, 0.01f, 0.01f }; // サイズを指定
+		sphere->transform_.scale = { 1.f, 1.f, 1.f }; // サイズを指定
 		jointSpheres_.push_back(sphere);
 	}
 
@@ -189,6 +189,7 @@ void GamePlayScene::Draw()
 	}
 
 	ImGui::End();
+
 
 	// ImGuiの内部コマンドを生成する
 	ImguiWrapper::Render(dxBase->GetCommandList());
