@@ -32,21 +32,22 @@ void GamePlayScene::Initialize()
 	uint32_t whiteGH = TextureManager::Load("resources/Images/white.png", dxBase->GetDevice());
 	
 	// モデル読み込み
-	model_ = ModelManager::LoadModelFile("resources/Models/human", "sneakWalk.gltf", dxBase->GetDevice());
+	model_ = ModelManager::LoadModelFile("resources/Models/human", "walk.gltf", dxBase->GetDevice());
 	model_.material.textureHandle = whiteGH;
 
 	sphereModel_ = ModelManager::LoadModelFile("resources/Models", "sphere.obj", dxBase->GetDevice());
 	sphereModel_.material.textureHandle = whiteGH;
 
 	// アニメーション読み込み
-	animation_ = ModelManager::LoadAnimation("resources/Models/human", "sneakWalk.gltf");
+	animation_ = ModelManager::LoadAnimation("resources/Models/human", "walk.gltf");
 	// スケルトン作成
 	skeleton_ = ModelManager::CreateSkeleton(model_.rootNode);
 
 	// 3Dオブジェクトの生成とモデル指定
 	object_ = new Object3D();
 	object_->model_ = &model_;
-	/*object_->transform_.rotate = { 0.0f, 3.14f, 0.0f };*/
+	object_->transform_.rotate = { 0.0f, 3.14f, 0.0f };
+	object_->transform_.translate = { 0.0f, -1.0f, -4.0f };
 
 	// Jointの数に応じて球のObject3Dを作成し、配列に追加
 	for (size_t i = 0; i < skeleton_.joints.size(); ++i) {
