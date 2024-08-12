@@ -1,5 +1,8 @@
 #pragma once
 #include <cmath>
+#include <cassert>
+
+class Matrix;
 
 struct Float3
 {

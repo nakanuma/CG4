@@ -32,11 +32,14 @@ void GamePlayScene::Initialize()
 	uint32_t whiteGH = TextureManager::Load("resources/Images/white.png", dxBase->GetDevice());
 	
 	// モデル読み込み
-	model_ = ModelManager::LoadModelFile("resources/Models/human", "sneakWalk.gltf", dxBase->GetDevice());
+	model_ = ModelManager::LoadModelFile("resources/Models/human", "walk.gltf", dxBase->GetDevice());
 	model_.material.textureHandle = whiteGH;
 
+	sphereModel_ = ModelManager::LoadModelFile("resources/Models", "sphere.obj", dxBase->GetDevice());
+	sphereModel_.material.textureHandle = whiteGH;
+
 	// アニメーション読み込み
-	animation_ = ModelManager::LoadAnimation("resources/Models/human", "sneakWalk.gltf");
+	animation_ = ModelManager::LoadAnimation("resources/Models/human", "walk.gltf");
 	// スケルトン作成
 	skeleton_ = ModelManager::CreateSkeleton(model_.rootNode);
 
@@ -45,12 +48,24 @@ void GamePlayScene::Initialize()
 	object_->model_ = &model_;
 	/*object_->transform_.rotate = { 0.0f, 3.14f, 0.0f };*/
 
-	// 音声読み込み
-	soundData_ = soundManager->LoadWave("resources/Sounds/yay.wav");
+	// Jointの数に応じて球のObject3Dを作成し、配列に追加
+	for (size_t i = 0; i < skeleton_.joints.size(); ++i) {
+		Object3D* sphere = new Object3D();
+		sphere->model_ = &sphereModel_;
+		sphere->transform_.scale = { 0.01f, 0.01f, 0.01f }; // サイズを指定
+		jointSpheres_.push_back(sphere);
+	}
+
 }
 
 void GamePlayScene::Finalize()
 {
+	// 球オブジェクト開放
+	for (Object3D* sphere : jointSpheres_) {
+		delete sphere;
+	}
+	jointSpheres_.clear();
+
 	// 音声データ開放
 	soundManager->Unload(&soundData_);
 	// SoundManager開放
@@ -71,6 +86,11 @@ void GamePlayScene::Update()
 	// 3Dオブジェクトの更新
 	object_->UpdateMatrix();
 	/*object_->transform_.rotate.y += 0.001f;*/
+
+	animationTime += 1.0f / 60.0f; // 時刻を進める
+	animationTime = std::fmod(animationTime, animation_.duration); // 最後までいったら最初からリピート再生
+	ModelManager::ApplyAnimation(skeleton_, animation_, animationTime); // Animationを適用
+	ModelManager::Update(skeleton_); // Skeletonの更新
 }
 
 void GamePlayScene::Draw()
@@ -97,25 +117,32 @@ void GamePlayScene::Draw()
 	Matrix viewMatrix = Camera::GetCurrent()->MakeViewMatrix();
 	Matrix projectionMatrix = Camera::GetCurrent()->MakePerspectiveFovMatrix();
 
-	animationTime += 1.0f / 60.0f; // 時刻を進める
-	animationTime = std::fmod(animationTime, animation_.duration); // 最後までいったら最初からリピート再生
-	ModelManager::ApplyAnimation(skeleton_, animation_, animationTime);
-	ModelManager::Update(skeleton_);
-
-	//ModelManager::NodeAnimation& rootNodeAnimation = animation_.nodeAnimations[model_.rootNode.name]; // rootNodeのAnimationを取得
-	//Float3 translate = ModelManager::CalculateValue(rootNodeAnimation.translate, animationTime); // 指定時刻の値を取得。
-	//Quaternion rotate = ModelManager::CalculateValue(rootNodeAnimation.rotate, animationTime);
-	//Float3 scale = ModelManager::CalculateValue(rootNodeAnimation.scale, animationTime);
-	//Transform transform = { scale, Float3{rotate.x, rotate.y, rotate.z}, translate }; // 一旦Transformにする
-	//Matrix localMatrix = transform.MakeAffineMatrix();
-
 	// RootのMatrixを適用
 	object_->wvpCB_.data_->WVP = worldMatrix * viewMatrix * projectionMatrix;
-	/*object_->wvpCB_.data_->World = localMatrix * worldMatrix;*/
 	object_->wvpCB_.data_->World = worldMatrix;
 
 	// 3Dオブジェクト描画
 	object_->Draw();
+
+	///
+	///	Jointの位置に球を描画
+	/// 
+
+	for (size_t i = 0; i < jointSpheres_.size(); ++i) {
+		const auto& joint = skeleton_.joints[i];
+
+		// Jointのワールド座標を計算
+		Matrix jointWorldMatrix = joint.skeletonSpaceMatrix * worldMatrix;
+
+		// 球のスケーリング行列を適用
+		Matrix sphereScaleMatrix = Matrix::Scaling(jointSpheres_[i]->transform_.scale);
+		Matrix sphereWorldMatrix = sphereScaleMatrix * jointWorldMatrix;
+
+		// 球を描画
+		jointSpheres_[i]->wvpCB_.data_->WVP = sphereWorldMatrix * viewMatrix * projectionMatrix;
+		jointSpheres_[i]->wvpCB_.data_->World = sphereWorldMatrix;
+		jointSpheres_[i]->Draw();
+	}
 
 	///
 	///	↑ ここまで3Dオブジェクトの描画コマンド
@@ -134,13 +161,32 @@ void GamePlayScene::Draw()
 
 	ImGui::Begin("window");
 
-	ImGui::Text("%s", model_.rootNode.name.c_str());
+	ImGui::Text("object");
+	ImGui::DragFloat3("object.translate", &object_->transform_.translate.x, 0.01f);
+	ImGui::DragFloat3("object.rotate", &object_->transform_.rotate.x, 0.01f);
+	ImGui::DragFloat3("object.scale", &object_->transform_.scale.x, 0.01f);
 
-	ImGui::DragFloat3("translate", &object_->transform_.translate.x, 0.01f);
-	ImGui::DragFloat3("rotate", &object_->transform_.rotate.x, 0.01f);
-	ImGui::DragFloat3("scale", &object_->transform_.scale.x, 0.01f);
+	ImGui::Text("camera");
+	ImGui::DragFloat3("camera.translate", &camera->transform.translate.x, 0.01f);
+	ImGui::DragFloat3("camera.rotate", &camera->transform.rotate.x, 0.01f);
+	ImGui::DragFloat3("camera.scale", &camera->transform.scale.x, 0.01f);
+
+	ImGui::End();
 
 
+	ImGui::Begin("Joint");
+
+	// Jointの位置を表示
+	for (size_t i = 0; i < skeleton_.joints.size(); ++i) {
+		const auto& joint = skeleton_.joints[i];
+		Float3 position = Float3(
+			joint.skeletonSpaceMatrix.r[3][0],
+			joint.skeletonSpaceMatrix.r[3][1],
+			joint.skeletonSpaceMatrix.r[3][2]
+			);
+
+		ImGui::Text("Joint %zu: (%.3f, %.3f, %.3f)", i, position.x, position.y, position.z);
+	}
 
 	ImGui::End();
 

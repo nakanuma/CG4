@@ -35,6 +35,7 @@ private:
 
 	// モデルデータ
 	ModelManager::ModelData model_;
+	ModelManager::ModelData sphereModel_;
 	// アニメーション
 	ModelManager::Animation animation_;
 	// スケルトン
@@ -43,6 +44,9 @@ private:
 	float animationTime = 0.0f;
 	// 3Dオブジェクト
 	Object3D* object_;
+
+	// 球を描画するための配列
+	std::vector<Object3D*> jointSpheres_;
 
 	// 音声データ
 	SoundManager::SoundData soundData_;
