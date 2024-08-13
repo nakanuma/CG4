@@ -40,6 +40,8 @@ private:
 	ModelManager::Animation animation_;
 	// スケルトン
 	ModelManager::Skeleton skeleton_;
+	// スキンクラスター
+	ModelManager::SkinCluster skinCluster_;
 	// アニメーション時間
 	float animationTime = 0.0f;
 	// 3Dオブジェクト

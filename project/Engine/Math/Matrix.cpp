@@ -233,6 +233,19 @@ Matrix Matrix::Inverse(Matrix m)
 	return -m;
 }
 
+Matrix Matrix::Transpose(const Matrix& m)
+{
+	Matrix result;
+
+	for (int i = 0; i < 4; ++i) {
+		for (int j = 0; j < 4; ++j) {
+			result.r[i][j] = m.r[j][i];
+		}
+	}
+
+	return result;
+}
+
 Matrix Matrix::PerspectiveFovLH(float fov, float aspectRatio, float nearZ, float farZ)
 {
 	Matrix result = Matrix();
@@ -357,6 +370,17 @@ Matrix Matrix::QuaternionToRotation(Quaternion q)
 	result.r[3][1] = 0.0f;
 	result.r[3][2] = 0.0f;
 	result.r[3][3] = 1.0f;
+
+	return result;
+}
+
+Matrix Matrix::MakeAffine(const Float3& scale, const Quaternion& rotate, const Float3 translate)
+{
+	Matrix result = Matrix();
+
+	result *= Matrix::Scaling({ scale.x, scale.y, scale.z });
+	result *= Matrix::QuaternionToRotation({ rotate.x, rotate.y, rotate.z, rotate.w });
+	result *= Matrix::Translation({ translate.x, translate.y, translate.z });
 
 	return result;
 }

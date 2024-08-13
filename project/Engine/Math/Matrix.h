@@ -44,6 +44,8 @@ public:
 
 	static Matrix Inverse(Matrix m);
 
+	static Matrix Transpose(const Matrix& m);
+
 	static Matrix PerspectiveFovLH(float fov, float aspectRatio, float nearZ, float farZ);
 
 	static Matrix Orthographic(float width, float height, float nearClip, float farClip);
@@ -63,5 +65,7 @@ public:
 	static Matrix RotationRollPitchYaw(float roll, float pitch, float yaw);
 
 	static Matrix QuaternionToRotation(Quaternion q);
+
+	static Matrix MakeAffine(const Float3& scale, const Quaternion& rotate, const Float3 translate);
 };
 

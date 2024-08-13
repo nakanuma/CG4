@@ -4,6 +4,7 @@
 #include <d3d12.h>
 #include <map>
 #include <optional>
+#include <span>
 
 #include <assimp/Importer.hpp>
 #include <assimp/scene.h>
@@ -34,7 +35,18 @@ public:
 		std::vector<Node> children;
 	};
 
+	struct VertexWeightData {
+		float weight;
+		uint32_t vertexIndex;
+	};
+
+	struct JointWeightData {
+		Matrix inverseBindPoseMatrix;
+		std::vector<VertexWeightData> vertexWeights;
+	};
+
 	struct ModelData {
+		std::map<std::string, JointWeightData> skinClusterData;
 		std::vector<VertexData> vertices;
 		std::vector<uint32_t> indices;
 		MaterialData material;
@@ -92,6 +104,31 @@ public:
 		std::vector<Joint> joints; // 所属しているジョイント
 	};
 
+	///
+	/// Skinning
+	///
+
+	static const uint32_t kNumMaxInfluence = 4; // 最大4Jointの影響を受ける
+	struct VertexInfluence {
+		std::array<float, kNumMaxInfluence> weights;
+		std::array<int32_t, kNumMaxInfluence> jointIndices;
+	};
+
+	struct WellForGPU {
+		Matrix skeletonSpaceMatrix; // 位置用
+		Matrix skeletonSpaceInverseTransposeMatrix; // 法線用
+	};
+
+	struct SkinCluster {
+		std::vector<Matrix> inverseBindPoseMatrices;
+		Microsoft::WRL::ComPtr<ID3D12Resource> influenceResource;
+		D3D12_VERTEX_BUFFER_VIEW influenceBufferView;
+		std::span<VertexInfluence> mappedInfluence;
+		Microsoft::WRL::ComPtr<ID3D12Resource> paletteResource;
+		std::span<WellForGPU> mappedPalette;
+		std::pair<D3D12_CPU_DESCRIPTOR_HANDLE, D3D12_GPU_DESCRIPTOR_HANDLE> paletteSrvHandle;
+	};
+
 	// Objファイルの読み込みを行う
 	static ModelData LoadModelFile(const std::string& directoryPath, const std::string& filename, ID3D12Device* device);
 	// mtlファイルの読み込みを行う
@@ -115,5 +152,10 @@ public:
 	static void Update(Skeleton& skeleton);
 	// Skeletonに対してAnimationの適用
 	static void ApplyAnimation(Skeleton& skeleton, const Animation& animation, float animationTime);
+
+	// SkinClusterの生成
+	static SkinCluster CreateSkinCluster(const Microsoft::WRL::ComPtr<ID3D12Device>& device, const Skeleton& skeleton, const ModelData& modelData);
+	// SkinClusterの更新
+	static void Update(SkinCluster& skinCluster, const Skeleton& skeleton);
 };
 

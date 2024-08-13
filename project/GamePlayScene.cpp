@@ -42,6 +42,8 @@ void GamePlayScene::Initialize()
 	animation_ = ModelManager::LoadAnimation("resources/Models/human", "walk.gltf");
 	// スケルトン作成
 	skeleton_ = ModelManager::CreateSkeleton(model_.rootNode);
+	// スキンクラスター作成
+	skinCluster_ = ModelManager::CreateSkinCluster(dxBase->GetDevice(), skeleton_, model_);
 
 	// 3Dオブジェクトの生成とモデル指定
 	object_ = new Object3D();
@@ -90,8 +92,13 @@ void GamePlayScene::Update()
 
 	animationTime += 1.0f / 60.0f; // 時刻を進める
 	animationTime = std::fmod(animationTime, animation_.duration); // 最後までいったら最初からリピート再生
-	ModelManager::ApplyAnimation(skeleton_, animation_, animationTime); // Animationを適用
-	ModelManager::Update(skeleton_); // Skeletonの更新
+
+	// アニメーションの更新を行って、骨ごとのLocal情報を更新する
+	ModelManager::ApplyAnimation(skeleton_, animation_, animationTime);
+	// 現在の骨ごとのLocal情報を基にSkeletonSpaceの情報を更新する
+	ModelManager::Update(skeleton_);
+	// SkeletonSpaceの情報を基に、SkinClusterのMatrixPaletteを更新する
+	ModelManager::Update(skinCluster_, skeleton_);
 }
 
 void GamePlayScene::Draw()
