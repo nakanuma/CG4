@@ -55,7 +55,7 @@ void GamePlayScene::Initialize()
 		sphere->model_ = &sphereModel_;
 		sphere->transform_.scale = { 1.f, 1.f, 1.f }; // サイズを指定
 		jointSpheres_.push_back(sphere);
-	}
+	} 
 
 }
 
