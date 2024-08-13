@@ -36,9 +36,12 @@ public:
 
 	struct ModelData {
 		std::vector<VertexData> vertices;
+		std::vector<uint32_t> indices;
 		MaterialData material;
 		Microsoft::WRL::ComPtr<ID3D12Resource> vertexResource;
 		D3D12_VERTEX_BUFFER_VIEW vertexBufferView;
+		Microsoft::WRL::ComPtr<ID3D12Resource> indexResource;
+		D3D12_INDEX_BUFFER_VIEW indexBufferView;
 		Node rootNode;
 	};
 

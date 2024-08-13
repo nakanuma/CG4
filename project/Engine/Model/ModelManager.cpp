@@ -27,24 +27,24 @@ ModelManager::ModelData ModelManager::LoadModelFile(const std::string& directory
         aiMesh* mesh = scene->mMeshes[meshIndex];
         assert(mesh->HasNormals()); // 法線がないMeshは今回は非対応
         assert(mesh->HasTextureCoords(0)); // TexcoordがないMeshは今回非対応
-        // ここからMeshの中身（Face）の解析を行っていく
+        modelData.vertices.resize(mesh->mNumVertices); // 最初に頂点数分のメモリを確保しておく
+        for (uint32_t vertexIndex = 0; vertexIndex < mesh->mNumVertices; ++vertexIndex) {
+            aiVector3D& position = mesh->mVertices[vertexIndex];
+            aiVector3D& normal = mesh->mNormals[vertexIndex];
+            aiVector3D& texcoord = mesh->mTextureCoords[0][vertexIndex];
+            /// 右手系->左手系への変換
+            modelData.vertices[vertexIndex].position = {-position.x, position.y, position.z, 1.0f};
+            modelData.vertices[vertexIndex].normal = { -normal.x, normal.y, normal.z };
+            modelData.vertices[vertexIndex].texcoord = { texcoord.x, texcoord.y };
+        }
+        // Indexの解析
         for (uint32_t faceIndex = 0; faceIndex < mesh->mNumFaces; ++faceIndex) {
             aiFace& face = mesh->mFaces[faceIndex];
-            assert(face.mNumIndices == 3); // 三角形のみサポート
-            // ここからFaceの中身（Vertex）の解析を行っていく
+            assert(face.mNumIndices == 3);
+
             for (uint32_t element = 0; element < face.mNumIndices; ++element) {
                 uint32_t vertexIndex = face.mIndices[element];
-                aiVector3D& position = mesh->mVertices[vertexIndex];
-                aiVector3D& normal = mesh->mNormals[vertexIndex];
-                aiVector3D& texcoord = mesh->mTextureCoords[0][vertexIndex];
-                VertexData vertexData;
-                vertexData.position = { position.x, position.y, position.z, 1.0f };
-                vertexData.normal = { normal.x, normal.y, normal.z };
-                vertexData.texcoord = { texcoord.x, texcoord.y };
-                // aiProcess_MakeLeftHandedはz*=-1で、右手->左手に変換するので手動で対処
-                vertexData.position.x *= -1.0f;
-                vertexData.normal.x *= -1.0f;
-                modelData.vertices.push_back(vertexData);
+                modelData.indices.push_back(vertexIndex);
             }
         }
     }
@@ -58,6 +58,7 @@ ModelManager::ModelData ModelManager::LoadModelFile(const std::string& directory
         }
     }
 
+
     // vertexResourceの作成
     modelData.vertexResource = CreateBufferResource(DirectXBase::GetInstance()->GetDevice(), sizeof(VertexData) * modelData.vertices.size());
 
@@ -70,13 +71,26 @@ ModelManager::ModelData ModelManager::LoadModelFile(const std::string& directory
     // 1頂点あたりのサイズ
     modelData.vertexBufferView.StrideInBytes = sizeof(VertexData);
 
-
     // 頂点リソースにデータを書き込む
     VertexData* vertexData = nullptr;
     // 書き込むためのアドレスを取得
     modelData.vertexResource->Map(0, nullptr, reinterpret_cast<void**>(&vertexData));
     // 頂点データをリソースにコピー
     std::memcpy(vertexData, modelData.vertices.data(), sizeof(VertexData) * modelData.vertices.size());
+
+
+    // indexResourceの作成
+    modelData.indexResource = CreateBufferResource(DirectXBase::GetInstance()->GetDevice(), sizeof(uint32_t) * modelData.indices.size());
+
+    // インデックスバッファビューを作成する
+    modelData.indexBufferView.BufferLocation = modelData.indexResource->GetGPUVirtualAddress();
+    modelData.indexBufferView.SizeInBytes = UINT(sizeof(uint32_t) * modelData.indices.size());
+    modelData.indexBufferView.Format = DXGI_FORMAT_R32_UINT;
+
+    // インデックスリソースにデータを書き込む
+    uint32_t* indexData = nullptr;
+    modelData.indexResource->Map(0, nullptr, reinterpret_cast<void**>(&indexData));
+    std::memcpy(indexData, modelData.indices.data(), sizeof(uint32_t) * modelData.indices.size());
 
     // 4. ModelDataを返す
     return modelData;
