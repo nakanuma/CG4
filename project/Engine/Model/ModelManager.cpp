@@ -53,7 +53,7 @@ ModelManager::ModelData ModelManager::LoadModelFile(const std::string& directory
         for (uint32_t boneIndex = 0; boneIndex < mesh->mNumBones; ++boneIndex) {
             aiBone* bone = mesh->mBones[boneIndex];
             std::string jointName = bone->mName.C_Str();
-            JointWeightData jointWeightData = modelData.skinClusterData[jointName];
+            JointWeightData& jointWeightData = modelData.skinClusterData[jointName];
 
             aiMatrix4x4 bindPoseMatrixAssimp = bone->mOffsetMatrix.Inverse();
             aiVector3D scale, translate;
