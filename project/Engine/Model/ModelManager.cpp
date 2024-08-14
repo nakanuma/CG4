@@ -333,6 +333,7 @@ ModelManager::SkinCluster ModelManager::CreateSkinCluster(const Microsoft::WRL::
     skinCluster.mappedPalette = { mappedPalette, skeleton.joints.size() }; // spanを使ってアクセスするようにする
     skinCluster.paletteSrvHandle.first = srvManager->GetCPUDescriptorHandle(srvManager->GetIndex());
     skinCluster.paletteSrvHandle.second = srvManager->GetGPUDescriptorHandle(srvManager->GetIndex());
+    SRVManager::GetInstance()->IncrementIndex(); // Indexを進める
 
     // palette用のsrvを作成
     D3D12_SHADER_RESOURCE_VIEW_DESC paletteSrvDesc{};

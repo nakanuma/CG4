@@ -18,6 +18,7 @@ public:
 	struct TransformationMatrix {
 		Matrix WVP;
 		Matrix World;
+		Matrix WorldInverseTranspose;
 	};
 
 	struct DirectionalLight {
@@ -41,6 +42,8 @@ public:
 	void Draw();
 
 	void Draw(const int TextureHandle);
+
+	void Draw(ModelManager::SkinCluster skinCluster);
 
 	void DrawInstancing(StructuredBuffer<ParticleForGPU>& structuredBuffer, uint32_t numInstance, const uint32_t TextureHandle);
 

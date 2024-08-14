@@ -193,7 +193,7 @@ private:
 	Microsoft::WRL::ComPtr<ID3DBlob> errorBlob_;
 	Microsoft::WRL::ComPtr<ID3D12RootSignature> rootSignature_;
 	Microsoft::WRL::ComPtr<ID3D12RootSignature> rootSignatureParticle_;
-	D3D12_INPUT_ELEMENT_DESC inputElementDescs_[3];
+	D3D12_INPUT_ELEMENT_DESC inputElementDescs_[5];
 	D3D12_INPUT_LAYOUT_DESC inputLayoutDesc_;
 
 	D3D12_BLEND_DESC blendDesc_; // kBlendModeNormal

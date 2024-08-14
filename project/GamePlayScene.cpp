@@ -130,7 +130,7 @@ void GamePlayScene::Draw()
 	object_->wvpCB_.data_->World = worldMatrix;
 
 	// 3Dオブジェクト描画
-	object_->Draw();
+	object_->Draw(skinCluster_);
 
 	///
 	///	Jointの位置に球を描画
