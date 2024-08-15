@@ -32,14 +32,14 @@ void GamePlayScene::Initialize()
 	uint32_t whiteGH = TextureManager::Load("resources/Images/white.png", dxBase->GetDevice());
 	
 	// モデル読み込み
-	model_ = ModelManager::LoadModelFile("resources/Models/human", "walk.gltf", dxBase->GetDevice());
+	model_ = ModelManager::LoadModelFile("resources/Models/human", "sneakWalk.gltf", dxBase->GetDevice());
 	model_.material.textureHandle = whiteGH;
 
 	sphereModel_ = ModelManager::LoadModelFile("resources/Models", "sphere.obj", dxBase->GetDevice());
 	sphereModel_.material.textureHandle = whiteGH;
 
 	// アニメーション読み込み
-	animation_ = ModelManager::LoadAnimation("resources/Models/human", "walk.gltf");
+	animation_ = ModelManager::LoadAnimation("resources/Models/human", "sneakWalk.gltf");
 	// スケルトン作成
 	skeleton_ = ModelManager::CreateSkeleton(model_.rootNode);
 	// スキンクラスター作成
@@ -136,21 +136,21 @@ void GamePlayScene::Draw()
 	///	Jointの位置に球を描画
 	/// 
 
-	for (size_t i = 0; i < jointSpheres_.size(); ++i) {
-		const auto& joint = skeleton_.joints[i];
+	//for (size_t i = 0; i < jointSpheres_.size(); ++i) {
+	//	const auto& joint = skeleton_.joints[i];
 
-		// Jointのワールド座標を計算
-		Matrix jointWorldMatrix = joint.skeletonSpaceMatrix * worldMatrix;
+	//	// Jointのワールド座標を計算
+	//	Matrix jointWorldMatrix = joint.skeletonSpaceMatrix * worldMatrix;
 
-		// 球のスケーリング行列を適用
-		Matrix sphereScaleMatrix = Matrix::Scaling(jointSpheres_[i]->transform_.scale);
-		Matrix sphereWorldMatrix = sphereScaleMatrix * jointWorldMatrix;
+	//	// 球のスケーリング行列を適用
+	//	Matrix sphereScaleMatrix = Matrix::Scaling(jointSpheres_[i]->transform_.scale);
+	//	Matrix sphereWorldMatrix = sphereScaleMatrix * jointWorldMatrix;
 
-		// 球を描画
-		jointSpheres_[i]->wvpCB_.data_->WVP = sphereWorldMatrix * viewMatrix * projectionMatrix;
-		jointSpheres_[i]->wvpCB_.data_->World = sphereWorldMatrix;
-		jointSpheres_[i]->Draw();
-	}
+	//	// 球を描画
+	//	jointSpheres_[i]->wvpCB_.data_->WVP = sphereWorldMatrix * viewMatrix * projectionMatrix;
+	//	jointSpheres_[i]->wvpCB_.data_->World = sphereWorldMatrix;
+	//	jointSpheres_[i]->Draw();
+	//}
 
 	///
 	///	↑ ここまで3Dオブジェクトの描画コマンド
