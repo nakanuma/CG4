@@ -18,7 +18,7 @@ struct DirectionalLight
 
 ConstantBuffer<DirectionalLight> gDirectionalLight : register(b1);
 
-Texture2D<float32_t4> gTexture : register(t0);
+TextureCube<float32_t4> gTexture : register(t0);
 SamplerState gSampler : register(s0);
 
 struct PixelShaderOutput
@@ -29,37 +29,7 @@ struct PixelShaderOutput
 PixelShaderOutput main(VertexShaderOutput input)
 {
     PixelShaderOutput output;
-    float4 transformedUV = mul(float32_t4(input.texcoord, 0.0f, 1.0f), gMaterial.uvTransform);
-    float32_t4 textureColor = gTexture.Sample(gSampler, transformedUV.xy);
-    
-    // texture‚Ìa’l‚ª0.5ˆÈ‰º‚Ì‚Æ‚«‚ÉPixel‚ðŠü‹p
-    if (textureColor.a <= 0.5)
-    {
-        discard;
-    }
-    // texture‚Ìa’l‚ª0‚Ì‚Æ‚«‚ÉPiel‚ðŠü‹p
-    if (textureColor.a == 0.0)
-    {
-        discard;
-    }
-    // output.colo‚Ìa’l‚ª0‚Ì‚Æ‚«‚ÉPixel‚ðŠü‹p
-    if (output.color.a == 0.0)
-    {
-        discard;
-    }
-    
-    if (gMaterial.enableLighting != 0)
-    { // Lighting‚·‚éê‡
-        // half lambert
-        float NdotL = dot(normalize(input.normal), -gDirectionalLight.direction);
-        float cos = pow(NdotL * 0.5f + 0.5f, 2.0f);
-        //output.color = gMaterial.color * textureColor * gDirectionalLight.color * cos * gDirectionalLight.intensity;
-        output.color.rgb = gMaterial.color.rgb * textureColor.rgb * gDirectionalLight.color.rgb * cos * gDirectionalLight.intensity;
-        output.color.a = gMaterial.color.a * textureColor.a;
-    }
-    else
-    {
-        output.color = gMaterial.color * textureColor;
-    }
+    float32_t4 textureColor = gTexture.Sample(gSampler, input.texcoord);
+    output.color = textureColor * gMaterial.color;
     return output;
 }

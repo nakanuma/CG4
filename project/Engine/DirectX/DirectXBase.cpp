@@ -515,6 +515,13 @@ void DirectXBase::ShaderCompile()
 
 	pixelShaderBlobParticle_ = CompileShader(L"resources/Shaders/Particle.PS.hlsl", L"ps_6_0", dxcUtils_, dxcCompiler_, includeHandler_);
 	assert(pixelShaderBlobParticle_ != nullptr);
+
+	// Skybox用Shader
+	vertexShaderBlobSkybox_ = CompileShader(L"resources/Shaders/Skybox.VS.hlsl", L"vs_6_0", dxcUtils_, dxcCompiler_, includeHandler_);
+	assert(vertexShaderBlobSkybox_ != nullptr);
+
+	pixelShaderBlobSkybox_ = CompileShader(L"resources/Shaders/Skybox.PS.hlsl", L"ps_6_0", dxcUtils_, dxcCompiler_, includeHandler_);
+	assert(pixelShaderBlobSkybox_ != nullptr);
 }
 
 void DirectXBase::CreatePipelineStateObject()
@@ -594,6 +601,14 @@ void DirectXBase::CreatePipelineStateObject()
 	// 生成
 	graphicsPipelineStateParticle_ = nullptr;
 	result = device_->CreateGraphicsPipelineState(&graphicsPipelineStateParticleDesc, IID_PPV_ARGS(&graphicsPipelineStateParticle_));
+
+	// Skybox用PSOを作成
+	D3D12_GRAPHICS_PIPELINE_STATE_DESC graphicsPipelineStateSkyboxDesc = graphicsPipelineStateDefault;
+	graphicsPipelineStateSkyboxDesc.VS = { vertexShaderBlobSkybox_->GetBufferPointer(), vertexShaderBlobSkybox_->GetBufferSize() }; // VertexShader
+	graphicsPipelineStateSkyboxDesc.PS = { pixelShaderBlobSkybox_->GetBufferPointer(), pixelShaderBlobSkybox_->GetBufferSize() }; // PixelShader
+	// 生成
+	graphicsPipelineStateSkybox_ = nullptr;
+	result = device_->CreateGraphicsPipelineState(&graphicsPipelineStateSkyboxDesc, IID_PPV_ARGS(&graphicsPipelineStateSkybox_));
 }
 
 void DirectXBase::SetViewport()

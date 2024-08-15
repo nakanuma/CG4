@@ -55,9 +55,11 @@ private:
 
 	
 	// SkyBox用データ
-	const uint32_t vertexNum_ = 8; // 箱なので頂点数は8
+	uint32_t cubeMapDDS_;
+	const uint32_t vertexNum_ = 24;
 	Microsoft::WRL::ComPtr<ID3D12Resource> vertexResource_;
 	D3D12_VERTEX_BUFFER_VIEW vertexBufferView_{};
-	ModelManager::VertexData* vertexData_ = nullptr;
+	Microsoft::WRL::ComPtr<ID3D12Resource> materialResource_;
+	Microsoft::WRL::ComPtr<ID3D12Resource> wvpResource_;
 };
 

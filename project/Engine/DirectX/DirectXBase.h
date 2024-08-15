@@ -167,7 +167,10 @@ public:
 	// Particle用ルートシグネチャを取得
 	ID3D12RootSignature* GetRootSignatureParticle() { return rootSignatureParticle_.Get(); }
 	// Particle用PSOを取得
-	ID3D12PipelineState* GetPipelineStateParticle() { return graphicsPipelineStateParticle_.Get(); };
+	ID3D12PipelineState* GetPipelineStateParticle() { return graphicsPipelineStateParticle_.Get(); }
+
+	// Skybox用PSOを取得
+	ID3D12PipelineState* GetPipelineStateSkybox() { return graphicsPipelineStateSkybox_.Get(); }
 
 private:
 	Microsoft::WRL::ComPtr<IDXGIFactory7> dxgiFactory_;
@@ -214,10 +217,13 @@ private:
 	IDxcBlob* pixelShaderBlob_;
 	IDxcBlob* vertexShaderBlobParticle_;
 	IDxcBlob* pixelShaderBlobParticle_;
+	IDxcBlob* vertexShaderBlobSkybox_;
+	IDxcBlob* pixelShaderBlobSkybox_;
 	Microsoft::WRL::ComPtr<ID3D12PipelineState> graphicsPipelineState_;
 	Microsoft::WRL::ComPtr<ID3D12PipelineState> graphicsPipelineStateOutline_;
 	Microsoft::WRL::ComPtr<ID3D12PipelineState> graphicsPipelineStateNoCulling_;
 	Microsoft::WRL::ComPtr<ID3D12PipelineState> graphicsPipelineStateParticle_;
+	Microsoft::WRL::ComPtr<ID3D12PipelineState> graphicsPipelineStateSkybox_;
 	D3D12_VIEWPORT viewport_;
 	D3D12_RECT scissorRect_;
 	Microsoft::WRL::ComPtr <ID3D12Resource> depthStencilResource_;

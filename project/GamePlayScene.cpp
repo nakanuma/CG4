@@ -31,7 +31,7 @@ void GamePlayScene::Initialize()
 	uint32_t uvCheckerGH = TextureManager::Load("resources/Images/uvChecker.png", dxBase->GetDevice());
 	uint32_t whiteGH = TextureManager::Load("resources/Images/white.png", dxBase->GetDevice());
 
-	uint32_t uvCheckerDDS = TextureManager::Load("resources/Images/uvChecker.dds", dxBase->GetDevice());
+	cubeMapDDS_ = TextureManager::Load("resources/Images/StandardCubeMap.dds", dxBase->GetDevice());
 	
 	// モデル読み込み
 	model_ = ModelManager::LoadModelFile("resources/Models/human", "sneakWalk.gltf", dxBase->GetDevice());
@@ -68,43 +68,60 @@ void GamePlayScene::Initialize()
 	// 頂点リソース作成
 	vertexResource_ = CreateBufferResource(dxBase->GetDevice(), sizeof(ModelManager::VertexData) * vertexNum_);
 
-	// VBV作成
+	// 頂点バッファビュー作成
 	vertexBufferView_.BufferLocation = vertexResource_->GetGPUVirtualAddress();
 	vertexBufferView_.SizeInBytes = sizeof(ModelManager::VertexData) * vertexNum_;
 	vertexBufferView_.StrideInBytes = sizeof(ModelManager::VertexData);
 
-	// リソースのアドレスを取得して、データを書き込む
-	vertexResource_->Map(0, nullptr, reinterpret_cast<void**>(&vertexData_));
+	// リソースのアドレスを取得してデータを書き込む
+	ModelManager::VertexData* vertexData = nullptr;
+	vertexResource_->Map(0, nullptr, reinterpret_cast<void**>(&vertexData));
 	// 右面。描画インデックスは[0, 1, 2][2, 1, 3]で内側を向く
-	vertexData_[0].position = { 1.0f, 1.0f, 1.0f, 1.0f };
-	vertexData_[1].position = { 1.0f, 1.0f, -1.0f, 1.0f };
-	vertexData_[2].position = { 1.0f, -1.0f, 1.0f, 1.0f };
-	vertexData_[3].position = { 1.0f, -1.0f, -1.0f, 1.0f };
+	vertexData[0].position = { 1.0f, 1.0f, 1.0f, 1.0f };
+	vertexData[1].position = { 1.0f, 1.0f, -1.0f, 1.0f };
+	vertexData[2].position = { 1.0f, -1.0f, 1.0f, 1.0f };
+	vertexData[3].position = { 1.0f, -1.0f, -1.0f, 1.0f };
 	// 左面。描画インデックスは[4, 5, 6][6, 5, 7]
-	vertexData_[4].position = { -1.0f, 1.0f, -1.0f, 1.0f };
-	vertexData_[5].position = { -1.0f, 1.0f, 1.0f, 1.0f };
-	vertexData_[6].position = { -1.0f, -1.0f, -1.0f, 1.0f };
-	vertexData_[7].position = { -1.0f, -1.0f, 1.0f, 1.0f };
+	vertexData[4].position = { -1.0f, 1.0f, -1.0f, 1.0f };
+	vertexData[5].position = { -1.0f, 1.0f, 1.0f, 1.0f };
+	vertexData[6].position = { -1.0f, -1.0f, -1.0f, 1.0f };
+	vertexData[7].position = { -1.0f, -1.0f, 1.0f, 1.0f };
 	// 前面。描画インデックスは[8, 9, 10][10, 9, 11]
-	vertexData_[8].position = { -1.0f, 1.0f, 1.0f, 1.0f };
-	vertexData_[9].position = { 1.0f, 1.0f, 1.0f, 1.0f };
-	vertexData_[10].position = { -1.0f, -1.0f, 1.0f, 1.0f };
-	vertexData_[11].position = { 1.0f, -1.0f, 1.0f, 1.0f };
+	vertexData[8].position = { -1.0f, 1.0f, 1.0f, 1.0f };
+	vertexData[9].position = { 1.0f, 1.0f, 1.0f, 1.0f };
+	vertexData[10].position = { -1.0f, -1.0f, 1.0f, 1.0f };
+	vertexData[11].position = { 1.0f, -1.0f, 1.0f, 1.0f };
 	// 後面。描画インデックスは[12, 13, 14][14, 13, 15]
-	vertexData_[12].position = { 1.0f, 1.0f, -1.0f, 1.0f };
-	vertexData_[13].position = { -1.0f, 1.0f, -1.0f, 1.0f };
-	vertexData_[14].position = { 1.0f, -1.0f, 1.0f, 1.0f };
-	vertexData_[15].position = { -1.0f, -1.0f, -1.0f, 1.0f };
+	vertexData[12].position = { 1.0f, 1.0f, -1.0f, 1.0f };
+	vertexData[13].position = { -1.0f, 1.0f, -1.0f, 1.0f };
+	vertexData[14].position = { 1.0f, -1.0f, 1.0f, 1.0f };
+	vertexData[15].position = { -1.0f, -1.0f, -1.0f, 1.0f };
 	// 上面。描画インデックスは[16, 17, 18][18, 17, 19]
-	vertexData_[16].position = { -1.0f, 1.0f, -1.0f, 1.0f };
-	vertexData_[17].position = { 1.0f, 1.0f, -1.0f, 1.0f };
-	vertexData_[18].position = { -1.0f, 1.0f, 1.0f, 1.0f };
-	vertexData_[19].position = { 1.0f, 1.0f, 1.0f, 1.0f };
+	vertexData[16].position = { -1.0f, 1.0f, -1.0f, 1.0f };
+	vertexData[17].position = { 1.0f, 1.0f, -1.0f, 1.0f };
+	vertexData[18].position = { -1.0f, 1.0f, 1.0f, 1.0f };
+	vertexData[19].position = { 1.0f, 1.0f, 1.0f, 1.0f };
 	// 下面。描画インデックスは[20, 21, 22][22, 21, 23]
-	vertexData_[20].position = { -1.0f, -1.0f, 1.0f, 1.0f };
-	vertexData_[21].position = { 1.0f, -1.0f, 1.0f, 1.0f };
-	vertexData_[22].position = { -1.0f, -1.0f, -1.0f, 1.0f };
-	vertexData_[23].position = { 1.0f, -1.0f, -1.0f, 1.0f };
+	vertexData[20].position = { -1.0f, -1.0f, 1.0f, 1.0f };
+	vertexData[21].position = { 1.0f, -1.0f, 1.0f, 1.0f };
+	vertexData[22].position = { -1.0f, -1.0f, -1.0f, 1.0f };
+	vertexData[23].position = { 1.0f, -1.0f, -1.0f, 1.0f };
+
+	// マテリアル用のリソース作成
+	materialResource_ = CreateBufferResource(dxBase->GetDevice(), sizeof(Object3D::Material));
+	Object3D::Material* materialData = nullptr;
+	materialResource_->Map(0, nullptr, reinterpret_cast<void**>(&materialData));
+	materialData->color = Float4(1.0f, 1.0f, 1.0f, 1.0f);
+	materialData->enableLighting = false;
+	materialData->uvTransform = Matrix::Identity();
+
+	// WVP用のリソース作成
+	wvpResource_ = CreateBufferResource(dxBase->GetDevice(), sizeof(Object3D::TransformationMatrix));
+	Object3D::TransformationMatrix* wvpData = nullptr;
+	wvpResource_->Map(0, nullptr, reinterpret_cast<void**>(&wvpData));
+	wvpData->WVP = Matrix::Identity();
+	wvpData->World = Matrix::Identity();
+	wvpData->WorldInverseTranspose = Matrix::Identity();
 }
 
 void GamePlayScene::Finalize()
@@ -197,6 +214,15 @@ void GamePlayScene::Draw()
 	//	jointSpheres_[i]->wvpCB_.data_->World = sphereWorldMatrix;
 	//	jointSpheres_[i]->Draw();
 	//}
+
+	// Skyboxの描画
+	dxBase->GetCommandList()->SetPipelineState(dxBase->GetPipelineStateSkybox());
+
+	dxBase->GetCommandList()->IASetVertexBuffers(0, 1, &vertexBufferView_);
+	dxBase->GetCommandList()->SetGraphicsRootConstantBufferView(0, materialResource_->GetGPUVirtualAddress());
+	dxBase->GetCommandList()->SetGraphicsRootConstantBufferView(1, wvpResource_->GetGPUVirtualAddress());
+	TextureManager::SetDescriptorTable(2, dxBase->GetCommandList(), cubeMapDDS_);
+	dxBase->GetCommandList()->DrawInstanced(vertexNum_, 1, 0, 0);
 
 	///
 	///	↑ ここまで3Dオブジェクトの描画コマンド
