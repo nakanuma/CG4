@@ -52,5 +52,12 @@ private:
 
 	// 音声データ
 	SoundManager::SoundData soundData_;
+
+	
+	// SkyBox用データ
+	const uint32_t vertexNum_ = 8; // 箱なので頂点数は8
+	Microsoft::WRL::ComPtr<ID3D12Resource> vertexResource_;
+	D3D12_VERTEX_BUFFER_VIEW vertexBufferView_{};
+	ModelManager::VertexData* vertexData_ = nullptr;
 };
 

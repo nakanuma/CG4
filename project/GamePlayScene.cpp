@@ -30,6 +30,8 @@ void GamePlayScene::Initialize()
 	// Texture読み込み
 	uint32_t uvCheckerGH = TextureManager::Load("resources/Images/uvChecker.png", dxBase->GetDevice());
 	uint32_t whiteGH = TextureManager::Load("resources/Images/white.png", dxBase->GetDevice());
+
+	uint32_t uvCheckerDDS = TextureManager::Load("resources/Images/uvChecker.dds", dxBase->GetDevice());
 	
 	// モデル読み込み
 	model_ = ModelManager::LoadModelFile("resources/Models/human", "sneakWalk.gltf", dxBase->GetDevice());
@@ -59,6 +61,50 @@ void GamePlayScene::Initialize()
 		jointSpheres_.push_back(sphere);
 	} 
 
+	///
+	/// SkyBox用データの設定
+	/// 
+	
+	// 頂点リソース作成
+	vertexResource_ = CreateBufferResource(dxBase->GetDevice(), sizeof(ModelManager::VertexData) * vertexNum_);
+
+	// VBV作成
+	vertexBufferView_.BufferLocation = vertexResource_->GetGPUVirtualAddress();
+	vertexBufferView_.SizeInBytes = sizeof(ModelManager::VertexData) * vertexNum_;
+	vertexBufferView_.StrideInBytes = sizeof(ModelManager::VertexData);
+
+	// リソースのアドレスを取得して、データを書き込む
+	vertexResource_->Map(0, nullptr, reinterpret_cast<void**>(&vertexData_));
+	// 右面。描画インデックスは[0, 1, 2][2, 1, 3]で内側を向く
+	vertexData_[0].position = { 1.0f, 1.0f, 1.0f, 1.0f };
+	vertexData_[1].position = { 1.0f, 1.0f, -1.0f, 1.0f };
+	vertexData_[2].position = { 1.0f, -1.0f, 1.0f, 1.0f };
+	vertexData_[3].position = { 1.0f, -1.0f, -1.0f, 1.0f };
+	// 左面。描画インデックスは[4, 5, 6][6, 5, 7]
+	vertexData_[4].position = { -1.0f, 1.0f, -1.0f, 1.0f };
+	vertexData_[5].position = { -1.0f, 1.0f, 1.0f, 1.0f };
+	vertexData_[6].position = { -1.0f, -1.0f, -1.0f, 1.0f };
+	vertexData_[7].position = { -1.0f, -1.0f, 1.0f, 1.0f };
+	// 前面。描画インデックスは[8, 9, 10][10, 9, 11]
+	vertexData_[8].position = { -1.0f, 1.0f, 1.0f, 1.0f };
+	vertexData_[9].position = { 1.0f, 1.0f, 1.0f, 1.0f };
+	vertexData_[10].position = { -1.0f, -1.0f, 1.0f, 1.0f };
+	vertexData_[11].position = { 1.0f, -1.0f, 1.0f, 1.0f };
+	// 後面。描画インデックスは[12, 13, 14][14, 13, 15]
+	vertexData_[12].position = { 1.0f, 1.0f, -1.0f, 1.0f };
+	vertexData_[13].position = { -1.0f, 1.0f, -1.0f, 1.0f };
+	vertexData_[14].position = { 1.0f, -1.0f, 1.0f, 1.0f };
+	vertexData_[15].position = { -1.0f, -1.0f, -1.0f, 1.0f };
+	// 上面。描画インデックスは[16, 17, 18][18, 17, 19]
+	vertexData_[16].position = { -1.0f, 1.0f, -1.0f, 1.0f };
+	vertexData_[17].position = { 1.0f, 1.0f, -1.0f, 1.0f };
+	vertexData_[18].position = { -1.0f, 1.0f, 1.0f, 1.0f };
+	vertexData_[19].position = { 1.0f, 1.0f, 1.0f, 1.0f };
+	// 下面。描画インデックスは[20, 21, 22][22, 21, 23]
+	vertexData_[20].position = { -1.0f, -1.0f, 1.0f, 1.0f };
+	vertexData_[21].position = { 1.0f, -1.0f, 1.0f, 1.0f };
+	vertexData_[22].position = { -1.0f, -1.0f, -1.0f, 1.0f };
+	vertexData_[23].position = { 1.0f, -1.0f, -1.0f, 1.0f };
 }
 
 void GamePlayScene::Finalize()

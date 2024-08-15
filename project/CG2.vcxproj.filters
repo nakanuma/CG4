@@ -361,6 +361,12 @@
     <FxCompile Include="resources\Shaders\SkinningObject3d.VS.hlsl">
       <Filter>Shader</Filter>
     </FxCompile>
+    <FxCompile Include="resources\Shaders\Skybox.PS.hlsl">
+      <Filter>Shader</Filter>
+    </FxCompile>
+    <FxCompile Include="resources\Shaders\Skybox.VS.hlsl">
+      <Filter>Shader</Filter>
+    </FxCompile>
   </ItemGroup>
   <ItemGroup>
     <Text Include="externals\imgui\LICENSE.txt">
@@ -375,6 +381,9 @@
       <Filter>Shader</Filter>
     </None>
     <None Include="resources\Shaders\Particle.hlsli">
+      <Filter>Shader</Filter>
+    </None>
+    <None Include="resources\Shaders\Skybox.hlsli">
       <Filter>Shader</Filter>
     </None>
   </ItemGroup>
